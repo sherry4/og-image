@@ -1,12 +1,14 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import { parseRequest } from './_lib/parser';
 import { getScreenshot } from './_lib/chromium';
 import { getHtml } from './_lib/template';
+import express from 'express';
 
 const isDev = !process.env.AWS_REGION;
 const isHtmlDebug = process.env.OG_HTML_DEBUG === '1';
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+const api = express();
+
+api.get('/:name', async (req: express.Request, res: express.Response) => {
     try {
         const parsedReq = parseRequest(req);
         const html = getHtml(parsedReq);
@@ -27,4 +29,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         res.end('<h1>Internal Error</h1><p>Sorry, there was a problem</p>');
         console.error(e);
     }
-}
+});
+
+const port = process.env.PORT || 3000;
+api.listen(port, () => {
+    console.log(`🚀 Server ready port ${port}`);
+});
